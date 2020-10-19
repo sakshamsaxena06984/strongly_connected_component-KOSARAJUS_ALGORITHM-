@@ -1,32 +1,103 @@
-# Prerequisites
-*.d
+#include<bits/stdc++.h>
+#include<vector>
+#include<stack>
+#include<unordered_set>
+using namespace std;
+//first dfs function
+void dfs_first(vector<int> *edge,int start,stack<int> &finished_vertrix,unordered_set<int> &visited)
+{
+	visited.insert(start);
+	for(int i=0;i<edge[start].size();i++)
+	{
+		int ele=edge[start][i];
+		if(visited.count(ele)==0)
+		{
+			dfs_first(edge,ele,finished_vertrix,visited);
+		}
+	}
+	//now we filing the value of our STACK
+	finished_vertrix.push(start);
+}
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+void dfs_second(vector<int> *edge,int start,unordered_set<int> &visited,unordered_set<int>* &component)
+{
+     visited.insert(start);
+     component->insert(start);
+     for(int i=0;i<edge[start].size();i++)
+     {
+     	int ele=edge[start][i];
+     	if(visited.count(ele)==0)
+     	{
+     		dfs_second(edge,ele,visited,component);
+		 }
+	 }
+}
+unordered_set<unordered_set<int>*>* func(vector<int> *edge,vector<int> *edge_tran,int n)
+{
+	//1- step
+	stack<int> finished_vertrix;
+	unordered_set<int> visited;
+	for(int i=0;i<n;i++)
+	{
+		if(visited.count(i)==0)
+		{
+			dfs_first(edge,i,finished_vertrix,visited);
+		}
+	}
+	//2- step
+	unordered_set<unordered_set<int>*>* output=new unordered_set<unordered_set<int>*>();
+	visited.clear();
 
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+    while(finished_vertrix.size()!=0)
+    {
+    	int ele=finished_vertrix.top();
+    	finished_vertrix.pop();
+    	if(visited.count(ele)!=0){
+    		continue;
+    	}
+    	  unordered_set<int>* component=new unordered_set<int>();
+    	  dfs_second(edge_tran,ele,visited,component);
+    	  output->insert(component);
+	}
+	
+	return output;
+}
+int main()
+{
+	int n;
+	cout<<"ENTER THE NUMBER OF NODE "<<endl;
+	cin>>n;
+	//creat simple graph and tranpose of simple graph
+	vector<int> *edge=new vector<int>[n];
+	vector<int> *edge_tran=new vector<int>[n];
+	int m;
+	cout<<"ENTR THE NUMBER OF RELATION IN THE DIRECTED GRAPH "<<endl;
+	cin>>m;
+	for(int i=0;i<m;i++)
+	{
+		int x,y;
+		cout<<"ENTER THE NODE ,WHICH WILL BE CONNNECTED "<<endl;
+		cin>>x>>y;
+		edge[x-1].push_back(y-1);
+		edge_tran[y-1].push_back(x-1);
+	}
+	unordered_set<unordered_set<int>*>* output=func(edge,edge_tran,n);
+	//printing our output below
+	unordered_set<unordered_set<int>*>::iterator it=output->begin();
+	while(it!=output->end()){
+	unordered_set<int>* component=*it;
+	unordered_set<int>::iterator it1=component->begin();
+	while(it1!=component->end())
+	{
+		cout<<*it1+1<<" ";
+		it1++;
+	}
+	delete component;
+	it++;
+	cout<<endl;
+    }
+    delete output;
+    
+	
+	
+}
